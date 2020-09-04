@@ -3,7 +3,8 @@ const path = require('path');
 const outputPath = path.resolve(__dirname, 'dist');
 
 module.exports = {
-    // バンドルするファイルを指定
+    // バンドルするファイルを指定Host: 
+
     entry: './src/main.js',
     output: {
         // バンドルしてmain.jsとして出力

@@ -8,7 +8,9 @@ Vue.use(GoogleMaps, {
   load: {
     key: 'AIzaSyDmx5nLzqkqLHT-KB0DXf0y4VpRr6SVOvI',
     libraries: 'places',
-  }
+  },
+
+  autobindAllEvents: false,
 });
 
 Vue.config.productionTip = false

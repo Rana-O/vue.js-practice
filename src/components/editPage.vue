@@ -3,11 +3,6 @@
         <header>
             <p>EDIT PAGE</p>
             <router-link to="/">Go To Top Page</router-link>
-            <div>
-                <p v-if="v">あ</p>
-                <p v-else>い</p>
-            </div>
-        
         </header>
         <div class="edit-container">
             <div class="card">
@@ -17,16 +12,34 @@
                     <div class="pram-group row">
                         <label for="photo" class="col-md-4 col-form-label text-md-right">Photo</label>
                         <div class="col-md-6">
-                            <input id="photo" type="file" class="param-control-file" name="photo" value="">
+                            <input id="photo" type="file" class="param-control-file" name="photo" value="" v-on:change="onFileChanged">
                         </div>
                     </div>
                     <!--もしphotoがあればlocationを出す -->
-                    <div class="pram-group row">
-                        <label for="location" class="col-md-4 col-form-label text-md-right">Location</label>
-                        <div class="col-md-6">
-                            <input id="location" type="" class="param-control-file" name="location" value="">
+                    <div v-if="hasPhoto">
+                        <div class="pram-group row">
+                            <label for="location" class="col-md-4 col-form-label text-md-right">Location</label>
+                            <div id="editPageMap">
+                                <GmapMap 
+                                    :center="center" 
+                                    :zoom="zoom" style="width: 100%; height: 100%;" 
+                                    @click="getLocation($event)"
+                                    >      
+                                        
+                                        <GmapMarker
+                                            :position="markerPosition"
+                                            :title="undefined"
+                                            :icon="undefined"
+                                            :clickable="true"
+                                            :draggable="true"
+                                            @click="makeAPin($event)">
+                                            </GmapMarker>
+                                        
+                                    </GmapMap>
+                            </div>
                         </div>
                     </div>
+                    <p v-else>※写真を選択してください。</p>
                     <div class="pram-group row">
                         <label for="caption" class="col-md-4 col-form-label text-md-right">Caption</label>
                         <div class="col-md-6">
@@ -45,13 +58,48 @@ import Vue from 'vue'
 export default Vue.extend ({
     data(){
         return {
-            value: false
+            photo: undefined,
+            center: { lat: 35.698304, lng: 139.766325 },
+            zoom: 10,
+            markerPosition: {
+                lat: undefined,
+                lng: undefined
+            }
+        }
+    },
+
+
+    methods: {
+        onFileChanged(event) {
+            // ファイルが設定されたので、設定されたファイルを持っておく
+            this.photo = event.target.value
+        },
+
+        getLocation(event) {
+            if(event) {
+                const newLat = event.latLng.lat()
+                const newLng = event.latLng.lng()
+                this.markerPosition = { lat: newLat, lng: newLng }
+                console.log('Location:')
+                console.log(this.markerPosition)
+            }
+        },
+
+        makeAPin(event) {
+            // もしクリックされたらlatLngをポジションに代入する
+            if(event) {
+                console.log ('hoge')
+            }
         }
     },
 
     computed: {
-        v() {
-            return !this.value
+        hasPhoto() {
+            if (this.photo) {
+                return true
+            } else {
+                return false
+            }
         }
     }
 })
@@ -61,6 +109,11 @@ export default Vue.extend ({
 <style>
 #editPage {
     margin: 50px;
+}
+
+#editPageMap {
+    height: 400px;
+    width: 500px;
 }
 
 .card > hr {

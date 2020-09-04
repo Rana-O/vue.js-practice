@@ -2,9 +2,11 @@
     <div id="topPage">
         <p>TOP PAGE</p>
         <router-link to="./edit">Go To Edit Page</router-link> 
+        <p>Location:{{ latLng }}</p>
         <GmapMap 
           :center="center" 
           :zoom="zoom" style="width: 100%; height: 100%;" 
+          @click="getLocation($event)"
         >      
             <div v-for="(m,id) in markers" :key="id">
                 <GmapInfoWindow
@@ -53,6 +55,11 @@ export default Vue.extend ({
       },
 
       infoWinOpen: false,
+
+      latLng: {
+        lat: undefined,
+        lng: undefined
+      }
     }
   },
       
@@ -60,7 +67,17 @@ export default Vue.extend ({
     toggleInfoWindow() {
       this.infoWinOpen = true;
     },
-  }
+
+    getLocation(event) {
+       if(event) {
+         const newLat = event.latLng.lat()
+         const newLng = event.latLng.lng()
+         console.log('Location:' + newLat + newLng)
+         this.latLng = { lat: newLat, lng: newLng }
+      }
+    },
+  },
+
 })
 </script>
 
@@ -81,6 +98,6 @@ img {
 
 #topPage {
   margin: 50px;
-  height: 700px;
+  height: 500px;
 }
 </style>
