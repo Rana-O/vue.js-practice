@@ -7,46 +7,50 @@
         <div class="edit-container">
             <div class="card">
                 <div clss="card-heder">Make a Pin</div>
-                
-                <div class="card-body">
-                    <div class="pram-group row">
-                        <label for="photo" class="col-md-4 col-form-label text-md-right">Photo</label>
-                        <div class="col-md-6">
-                            <input id="photo" type="file" class="param-control-file" name="photo" value="" v-on:change="onFileChanged">
-                        </div>
-                    </div>
-                    <!--もしphotoがあればlocationを出す -->
-                    <div v-if="hasPhoto">
-                        <div class="pram-group row">
-                            <label for="location" class="col-md-4 col-form-label text-md-right">Location</label>
-                            <div id="editPageMap">
-                                <GmapMap 
-                                    :center="center" 
-                                    :zoom="zoom" style="width: 100%; height: 100%;" 
-                                    @click="getLocation($event)"
-                                    >      
-                                        
-                                        <GmapMarker
-                                            :position="markerPosition"
-                                            :title="undefined"
-                                            :icon="undefined"
-                                            :clickable="true"
-                                            :draggable="true"
-                                            @click="makeAPin($event)">
-                                            </GmapMarker>
-                                        
-                                    </GmapMap>
+                    <form>
+                        <div class="card-body">
+                            <div class="pram-group row">
+                                <label for="photo" class="col-md-4 col-form-label text-md-right">Photo</label>
+                                        <div class="col-md-6">
+                                            <input id="photo" type="file" class="param-control-file" name="photo" value="" v-on:change="onFileChanged">
+                                            <canvas id="canvas" height="0"></canvas>
+                                        </div>
+                            </div>
+                            <!-- もしphotoがあればlocationを出す -->
+                            <div v-if="hasPhoto">
+                                <div class="pram-group row">
+                                    <label class="col-md-4 col-form-label text-md-right">Location</label>
+                                    <div id="editPageMap">
+                                        <GmapMap 
+                                            :center="center" 
+                                            :zoom="zoom" style="width: 100%; height: 100%;" 
+                                            @click="getLocation($event)"
+                                            >      
+                                                
+                                                <GmapMarker
+                                                    :position="markerPosition"
+                                                    :title="undefined"
+                                                    :icon="undefined"
+                                                    :clickable="true"
+                                                    :draggable="true"
+                                                    @click="makeAPin($event)">
+                                                    </GmapMarker>
+                                            </GmapMap>
+                                    </div>
+                                </div>
+                            </div>
+                            <p v-else>※写真を選択してください。</p>
+                            <div class="pram-group row">
+                                <label for="caption" class="col-md-4 col-form-label text-md-right">Caption</label>
+                                <div class="col-md-6">
+                                    <textarea id="caption" type="text" class="param-control-file" name="caption" value=""></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6 offset-md-4">   
+                                        <button class="btn btn-primary" @click="onSubmit($event)">送信</button>
                             </div>
                         </div>
-                    </div>
-                    <p v-else>※写真を選択してください。</p>
-                    <div class="pram-group row">
-                        <label for="caption" class="col-md-4 col-form-label text-md-right">Caption</label>
-                        <div class="col-md-6">
-                            <textarea id="caption" type="text" class="param-control-file" name="caption" value=""></textarea>
-                        </div>
-                    </div>
-                </div>
+                    </form>
             </div>
         </div>
     </div>
@@ -54,7 +58,8 @@
 
 
 <script>
-import Vue from 'vue'
+import Vue from 'vue';
+import { client } from '@/main';
 export default Vue.extend ({
     data(){
         return {
@@ -62,17 +67,41 @@ export default Vue.extend ({
             center: { lat: 35.698304, lng: 139.766325 },
             zoom: 10,
             markerPosition: {
-                lat: undefined,
-                lng: undefined
+                lat: 0,
+                lng: 0
             }
         }
     },
 
-
     methods: {
+
         onFileChanged(event) {
             // ファイルが設定されたので、設定されたファイルを持っておく
             this.photo = event.target.value
+
+            //キャンバスに写真を表示する
+            let fileData = event.target.files[0]
+            let canvas = document.getElementById('canvas');
+            let canvasWidth = 200;
+            let canvasHeight = 150;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            let ctx = canvas.getContext('2d');
+
+            let reader = new FileReader();
+            // let that = this;
+            reader.onload = function() {
+                let uploadImgSrc = reader.result;
+                // canvas上に画像を重ねて表示
+                let img = new Image();
+                img.src = uploadImgSrc;
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, canvasWidth, this.height * (canvasWidth / this.width));
+                }
+            }
+             reader.readAsDataURL(fileData);
+
+            
         },
 
         getLocation(event) {
@@ -90,6 +119,39 @@ export default Vue.extend ({
             if(event) {
                 console.log ('hoge')
             }
+        },
+
+        onSubmit(event) {
+            // 以下はPOSTボタンを押したら
+             // blobデータを作成する
+             const type ='image/png';
+             let canvas = document.getElementById('canvas');
+             document.querySelector('canvas');
+             const dataUrl = canvas.toDataURL(type);
+             const bin = atob(dataUrl.split(',')[1]);
+             const buffer = new Uint8Array(bin.length);
+             for (let i=0; i<bin.length; i++) {
+                 buffer[i] = bin.charCodeAt(i);
+             }
+             const blob = new Blob([buffer.buffer],{type: type});
+
+             // blobデータwpFormDataインタフェースに追加
+             const data = new FormData();
+             data.append('photo', blob, 'image.png'); //photoというkeyで保存
+
+            // blobを格納したdataをaxios.postの第二引数にセット
+             client.post('/api/photo', data, {
+                 headers: { 'content-type': 'multipart/form-data' }
+             })
+             .then((response) => {
+                 console.log('success')
+                 console.log(response)
+
+             })
+             .catch((error) => {
+                 new Error(error)
+             });
+             event.preventDefault();
         }
     },
 
