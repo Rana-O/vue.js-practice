@@ -43,7 +43,9 @@
                             <div class="pram-group row">
                                 <label for="caption" class="col-md-4 col-form-label text-md-right">Caption</label>
                                 <div class="col-md-6">
-                                    <textarea id="caption" type="text" class="param-control-file" name="caption" value=""></textarea>
+                                    <textarea class="param-control-file" v-model="caption"></textarea>
+                                    <input type="test">
+                                    <input type="password">
                                 </div>
                             </div>
                             <div class="col-md-6 offset-md-4">   
@@ -55,7 +57,6 @@
         </div>
     </div>
 </template>
-
 
 <script>
 import Vue from 'vue';
@@ -69,7 +70,8 @@ export default Vue.extend ({
             markerPosition: {
                 lat: 0,
                 lng: 0
-            }
+            },
+            caption: ''
         }
     },
 
@@ -138,10 +140,16 @@ export default Vue.extend ({
              // blobデータwpFormDataインタフェースに追加
              const data = new FormData();
              data.append('photo', blob, 'image.png'); //photoというkeyで保存
+             data.append('lat', this.markerPosition.lat); //latLngというkeyで保存
+             data.append('lng', this.markerPosition.lng); //latLngというkeyで保存
+             data.append('caption', this.caption); //captionというkeyで保存
+
 
             // blobを格納したdataをaxios.postの第二引数にセット
              client.post('/api/photo', data, {
-                 headers: { 'content-type': 'multipart/form-data' }
+                 headers: { 
+                     'content-type': 'multipart/form-data',
+                }
              })
              .then((response) => {
                  console.log('success')
@@ -168,7 +176,7 @@ export default Vue.extend ({
 </script>
 
 
-<style>
+<style scoped>
 #editPage {
     margin: 50px;
 }
