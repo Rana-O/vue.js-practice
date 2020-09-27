@@ -1,58 +1,61 @@
 <template>
     <div id="editPage">
         <header>
-            <p>EDIT PAGE</p>
+            <p>EDIT PAGE HEADER</p>
             <router-link to="/">Go To Top Page</router-link>
         </header>
-        <div class="edit-container">
-            <div class="card">
-                <div clss="card-heder">Make a Pin</div>
-                    <form>
-                        <div class="card-body">
-                            <div class="pram-group row">
-                                <label for="photo" class="col-md-4 col-form-label text-md-right">Photo</label>
-                                        <div class="col-md-6">
-                                            <input id="photo" type="file" class="param-control-file" name="photo" value="" v-on:change="onFileChanged">
-                                            <canvas id="canvas" height="0"></canvas>
-                                        </div>
-                            </div>
-                            <!-- もしphotoがあればlocationを出す -->
-                            <div v-if="hasPhoto">
-                                <div class="pram-group row">
-                                    <label class="col-md-4 col-form-label text-md-right">Location</label>
-                                    <div id="editPageMap">
-                                        <GmapMap 
-                                            :center="center" 
-                                            :zoom="zoom" style="width: 100%; height: 100%;" 
-                                            @click="getLocation($event)"
-                                            >      
-                                                
-                                                <GmapMarker
-                                                    :position="markerPosition"
-                                                    :title="undefined"
-                                                    :icon="undefined"
-                                                    :clickable="true"
-                                                    :draggable="true"
-                                                    @click="makeAPin($event)">
-                                                    </GmapMarker>
-                                            </GmapMap>
+        <div class="page-container">
+            <div class="container">
+                <form>
+                    <div class="element-container">
+                        <div class="setPhoto">
+                            <div class="icon">
+                                <label id="photo">
+                                    <input type="file" v-on:change="onFileChanged">
+                                    <div v-if="closeIcon">
+                                    <fontAwesomeIcon class="imagesIcon" icon="images" />
+                                    <p class="element-name">写真を選択</p>
                                     </div>
-                                </div>
+                                </label>
                             </div>
-                            <p v-else>※写真を選択してください。</p>
-                            <div class="pram-group row">
-                                <label for="caption" class="col-md-4 col-form-label text-md-right">Caption</label>
-                                <div class="col-md-6">
-                                    <textarea class="param-control-file" v-model="caption"></textarea>
-                                    <input type="test">
-                                    <input type="password">
-                                </div>
-                            </div>
-                            <div class="col-md-6 offset-md-4">   
-                                        <button class="btn btn-primary" @click="onSubmit($event)">送信</button>
-                            </div>
+                            <canvas id="canvas" height="0"></canvas>
                         </div>
-                    </form>
+                        
+                    </div>
+                    <!-- もしphotoがあれば地図を出す -->
+                    <div v-if="hasPhoto">
+                        <div class="element-container">
+                            <div id="editPageMap">
+                                <GmapMap 
+                                :center="center" 
+                                :zoom="zoom" style="width: 100%; height: 100%;" 
+                                @click="getLocation($event)"
+                                >      
+                                    
+                                    <GmapMarker
+                                        :position="markerPosition"
+                                        :title="undefined"
+                                        :icon="undefined"
+                                        :clickable="true"
+                                        :draggable="true"
+                                        @click="makeAPin($event)">
+                                        </GmapMarker>
+                                </GmapMap>
+                            </div>
+                            <p class="element-name">位置情報を設定</p><br>
+                        </div>
+                        <div class="element-container">
+                            <div class="caption">
+                                <textarea class="" v-model="caption"></textarea>
+                            </div>
+                            <p class="element-name">キャプションを追加</p>
+                        </div>
+                        <div class="element-container"> 
+                            <button class="btn" @click="onSubmit($event)">送信</button>
+                        </div>
+                    </div>
+                    
+                </form>
             </div>
         </div>
     </div>
@@ -65,11 +68,11 @@ export default Vue.extend ({
     data(){
         return {
             photo: undefined,
-            center: { lat: 35.698304, lng: 139.766325 },
+            center: { lat: 35.657553, lng: 139.697377 },
             zoom: 10,
             markerPosition: {
-                lat: 0,
-                lng: 0
+                lat: 35.657553,
+                lng: 139.697377
             },
             caption: ''
         }
@@ -84,14 +87,13 @@ export default Vue.extend ({
             //キャンバスに写真を表示する
             let fileData = event.target.files[0]
             let canvas = document.getElementById('canvas');
-            let canvasWidth = 200;
-            let canvasHeight = 150;
+            let canvasWidth = 350;
+            let canvasHeight = 262.5;
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
             let ctx = canvas.getContext('2d');
 
             let reader = new FileReader();
-            // let that = this;
             reader.onload = function() {
                 let uploadImgSrc = reader.result;
                 // canvas上に画像を重ねて表示
@@ -145,10 +147,14 @@ export default Vue.extend ({
              data.append('caption', this.caption); //captionというkeyで保存
 
 
-            // blobを格納したdataをaxios.postの第二引数にセット
+            // blobを格納したdataとアクセストークンをaxios.postの第二引数にセット
+            const accessToken = "hoge";
+            console.log ('CHECK!!!');
              client.post('/api/photo', data, {
                  headers: { 
-                     'content-type': 'multipart/form-data',
+                     'Content-Type': 'multipart/form-data',
+                     'Authorization': `Bearer ${accessToken}`
+
                 }
              })
              .then((response) => {
@@ -158,6 +164,8 @@ export default Vue.extend ({
              })
              .catch((error) => {
                  new Error(error)
+                 console.log ('CHECK in catch!!!');
+                 console.log (error);
              });
              event.preventDefault();
         }
@@ -170,47 +178,63 @@ export default Vue.extend ({
             } else {
                 return false
             }
+        },
+
+        closeIcon() {
+            if (this.photo) {
+                return false
+            } else {
+                return true
+            }
         }
     }
 })
 </script>
-
-
 <style scoped>
-#editPage {
-    margin: 50px;
-}
 
 #editPageMap {
-    height: 400px;
-    width: 500px;
+    margin: auto;
+  height: 270px;
+  width: 350px;
+  text-align: center;
 }
 
-.card > hr {
-  margin-right: 0;
-  margin-left: 0;
+.container {
+    flex-direction: column;
+    text-align: center;
 }
 
-.card > .list-group {
-  border-top: inherit;
-  border-bottom: inherit;
+.element-container {
+    margin: 30px 0;
 }
 
-.card > .list-group:first-child {
-  border-top-width: 0;
-  border-top-left-radius: calc(0.25rem - 1px);
-  border-top-right-radius: calc(0.25rem - 1px);
+label input {
+     display: none;
 }
 
-.card > .list-group:last-child {
-  border-bottom-width: 0;
-  border-bottom-right-radius: calc(0.25rem - 1px);
-  border-bottom-left-radius: calc(0.25rem - 1px);
+.imagesIcon {
+    width: 200px;
+    height: 150px;
+    margin: 7px;
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 10px;
+    border-radius: 5px;
+    cursor:pointer;
 }
 
-.card > .card-header + .list-group,
-.card > .list-group + .card-footer {
-  border-top: 0;
+textarea {
+    width: 350px;
+    height: 70px;
+}
+
+.btn {
+    padding: 10px 25px;
+    margin: 10px;
+    background-color: #e9ecef;
+    color: #495057;
+    border-radius: 5px;
+    cursor:pointer;
 }
 
 </style>

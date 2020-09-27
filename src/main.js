@@ -2,6 +2,15 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import App from './components/App.vue'
 import * as GoogleMaps from 'vue2-google-maps'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faCoffee } from '@fortawesome/free-solid-svg-icons'
+import { faImages } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+library.add(faCoffee)
+library.add(faImages)
+
+Vue.component('fontAwesomeIcon', FontAwesomeIcon)
 
 Vue.use(GoogleMaps, {
   load: {
@@ -40,7 +49,7 @@ new Vue({
 // axiosをrequireしてインスタンスを生成する
 const axios = require('axios');
 export const client = axios.create({
-baseURL: 'http://127.0.0.1:8081/',
+baseURL: 'http://127.0.0.1:8000/',
 headers : {
     'Content-Type': 'multipart/form-data'
 }
