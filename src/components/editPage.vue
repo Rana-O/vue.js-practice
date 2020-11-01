@@ -118,13 +118,6 @@ export default Vue.extend ({
             }
         },
 
-        makeAPin(event) {
-            // もしクリックされたらlatLngをポジションに代入する
-            if(event) {
-                console.log ('hoge')
-            }
-        },
-
         onSubmit(event) {
             // 以下はPOSTボタンを押したら
              // blobデータを作成する
@@ -148,8 +141,10 @@ export default Vue.extend ({
 
 
             // blobを格納したdataとアクセストークンをaxios.postの第二引数にセット
-            const accessToken = "hoge";
+            const accessToken = this.$route.query.apiKey;
             console.log ('CHECK!!!');
+            console.log (accessToken);
+
              client.post('/api/photo', data, {
                  headers: { 
                      'Content-Type': 'multipart/form-data',
